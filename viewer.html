@@ -30,7 +30,7 @@
 			gl.useProgram(null);
 
 			//data buffer setup
-			var aryVerts = new Float32Array([0,0,0]),
+			var aryVerts = new Float32Array([0,0,0,0.5,0.5,0]),
 				bufVerts = gl.createBuffer();
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
@@ -39,14 +39,14 @@
 
 			//set up drawing
 			gl.useProgram(shaderProg); //activate the shader
-			gl.uniform1f(uPointSizeLoc,50.0); //store data to the shader's uniform variable
+			gl.uniform1f(uPointSizeLoc,5.0); //store data to the shader's uniform variable
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
 			gl.enableVertexAttribArray(aPositionLoc);
 			gl.vertexAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-			this.gl.drawArrays(gl.POINTS, 0, 1);
+			this.gl.drawArrays(gl.POINTS, 0, 2);
 		});
 	</script>
 </head>
@@ -60,9 +60,9 @@
 		uniform float uPointSize;
 
 		void main(void){
-		gl_PointSize = uPointSize;
-		gl_Position = vec4(a_position, 1.0);
-	}
+			gl_PointSize = uPointSize;
+			gl_Position = vec4(a_position, 1.0);
+		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
@@ -70,8 +70,8 @@
 		out vec4 finalColor;
 
 		void main(void){
-		finalColor = vec4(0.0,0.0,0.0,1.0);
-	}
+			finalColor = vec4(0.75,0.8,0.0,1.0);
+		}
 	</script>
 </body>
 </html>
