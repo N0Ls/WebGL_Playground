@@ -50,5 +50,7 @@ class ShaderUtil{
 		gl.detachShader(prog, fShader);
 		gl.deleteShader(fShader);
 		gl.deleteShader(vShader);
+
+		return prog;
 	}
 }
