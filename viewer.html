@@ -24,9 +24,9 @@
 				//Link shaders into program
 				shaderProg = ShaderUtil.createProgram(gl,vShader,fShader,true);
 
-			gl.userProgram(shaderProg);
+			gl.useProgram(shaderProg);
 			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position"),
-				uPositionLoc = gl.getUniformLocation(shaderProg,"uPointSize");
+				uPointSizeLoc = gl.getUniformLocation(shaderProg,"uPointSize");
 			gl.useProgram(null);
 
 			//data buffer setup
@@ -39,11 +39,11 @@
 
 			//set up drawing
 			gl.useProgram(shaderProg); //activate the shader
-			gl.uniform1f(uPointSize,50.0); //store data to the shader's uniform variable
+			gl.uniform1f(uPointSizeLoc,50.0); //store data to the shader's uniform variable
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
 			gl.enableVertexAttribArray(aPositionLoc);
-			gl.vertAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
+			gl.vertexAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 			this.gl.drawArrays(gl.POINTS, 0, 1);
