@@ -17,5 +17,24 @@
 	<div>
 		<canvas id="glcanvas"></canvas>
 	</div>
+	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
+		in vec3 a_position;
+
+		uniform float uPointSize;
+
+		void main(void){
+		gl_PointSize = uPointSize;
+		gl_Position = vec4(a_position, 1.0);
+	}
+	</script>
+	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
+		precision mediump float;
+		
+		out vec4 finalColor;
+
+		void main(void){
+		finalColor = vec4(0.0,0.0,0.0,1.0);
+	}
+	</script>
 </body>
 </html>
