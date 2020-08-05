@@ -4,12 +4,49 @@
 	<title>WebGL Playground</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<script src="gl.js"></script>
+	<script src="Shaders.js"></script>
 	<script>
 		var gl;
 		window.addEventListener("load", function(){
 			gl= GLInstance("glcanvas"); // Init context
 			gl.fSetSize(500,500); //Setting size
 			gl.fClear(); //Reseting context
+
+			//Shader steps
+			// Get shaders texts
+			var vShaderTxt = ShaderUtil.domShaderSrc("vertex_shader"), 
+				fShaderTxt = ShaderUtil.domShaderSrc("fragment_shader"),
+
+				//Compile shaders
+				vShader = ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER),
+				fShader = ShaderUtil.createShader(gl,fShaderTxt, gl.FRAGMENT_SHADER),
+
+				//Link shaders into program
+				shaderProg = ShaderUtil.createProgram(gl,vShader,fShader,true);
+
+			gl.userProgram(shaderProg);
+			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position"),
+				uPositionLoc = gl.getUniformLocation(shaderProg,"uPointSize");
+			gl.useProgram(null);
+
+			//data buffer setup
+			var aryVerts = new Float32Array([0,0,0]),
+				bufVerts = gl.createBuffer();
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
+			gl.bufferData(gl.ARRAY_BUFFER,aryVerts, gl.STATIC_DRAW);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			//set up drawing
+			gl.useProgram(shaderProg); //activate the shader
+			gl.uniform1f(uPointSize,50.0); //store data to the shader's uniform variable
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
+			gl.enableVertexAttribArray(aPositionLoc);
+			gl.vertAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			this.gl.drawArrays(gl.POINTS, 0, 1);
 		});
 	</script>
 </head>
