@@ -3,6 +3,15 @@
 <head>
 	<title>WebGL Playground</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="gl.js"></script>
+	<script>
+		var gl;
+		window.addEventListener("load", function(){
+			gl= GLInstance("glcanvas"); // Init context
+			gl.fSetSize(500,500); //Setting size
+			gl.fClear(); //Reseting context
+		});
+	</script>
 </head>
 <body>
 	<div>
