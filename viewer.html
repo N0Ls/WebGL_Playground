@@ -6,7 +6,11 @@
 	<script src="gl.js"></script>
 	<script src="Shaders.js"></script>
 	<script>
-		var gl;
+		var gl,
+			gVertCount = 0,
+			uPointSizeLoc = -1,
+			uAngle = 0,
+			gRLoop;
 		window.addEventListener("load", function(){
 			gl= GLInstance("glcanvas"); // Init context
 			gl.fSetSize(500,500); //Setting size
@@ -31,12 +35,14 @@
 			gl.useProgram(null);
 
 			//data buffer setup
-			var aryVerts = new Float32Array([0,0,0,0.5,0.5,0]),
-				bufVerts = gl.createBuffer();
+			var aryVerts = new Float32Array([0,0,0]),
+				bufVerts = gl.fCreateArrayBuffer(aryVerts);
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
-			gl.bufferData(gl.ARRAY_BUFFER,aryVerts, gl.STATIC_DRAW);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			gVertCount = aryVerts.length / 3;
+
+			//gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
+			//gl.bufferData(gl.ARRAY_BUFFER,aryVerts, gl.STATIC_DRAW);
+			//gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 			//set up drawing
 			gl.useProgram(shaderProg); //activate the shader
@@ -47,7 +53,7 @@
 			gl.vertexAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-			this.gl.drawArrays(gl.POINTS, 0, 2);
+			this.gl.drawArrays(gl.POINTS, 0, gVertCount);
 		});
 	</script>
 </head>

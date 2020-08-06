@@ -10,6 +10,15 @@ function GLInstance(canvasID){
 	//Methods
 	gl.fClear = function(){this.clear(this.COLOR_BUFFER_BIT | this.DEPTH_BUFFER_BIT); return this;}
 
+	gl.fCreateArrayBuffer = function(floatAry, isStatic){
+		if(isStatic === undefined) isStatic = true;
+
+		var buf = this.createBuffer();
+		this.bindBuffer(this.ARRAY_BUFFER, buf);
+		this.bufferData(this.ARRAY_BUFFER,floatAry, (isStatic)? this.STATIC_DRAW : this.DYNAMIC_DRAW);
+		this.bindBuffer(this.ARRAY_BUFFER, null);
+		return buf;
+	}
 	//Setters - Getters
 
 	//Set size of canvas
