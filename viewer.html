@@ -14,7 +14,7 @@
 
 			//Shader steps
 			// Get shaders texts
-			var vShaderTxt = ShaderUtil.domShaderSrc("vertex_shader"), 
+			/*var vShaderTxt = ShaderUtil.domShaderSrc("vertex_shader"), 
 				fShaderTxt = ShaderUtil.domShaderSrc("fragment_shader"),
 
 				//Compile shaders
@@ -22,7 +22,8 @@
 				fShader = ShaderUtil.createShader(gl,fShaderTxt, gl.FRAGMENT_SHADER),
 
 				//Link shaders into program
-				shaderProg = ShaderUtil.createProgram(gl,vShader,fShader,true);
+				shaderProg = ShaderUtil.createProgram(gl,vShader,fShader,true);*/
+				shaderProg = ShaderUtil.domShaderProgram(gl,"vertex_shader", "fragment_shader", true);
 
 			gl.useProgram(shaderProg);
 			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position"),
@@ -39,7 +40,7 @@
 
 			//set up drawing
 			gl.useProgram(shaderProg); //activate the shader
-			gl.uniform1f(uPointSizeLoc,5.0); //store data to the shader's uniform variable
+			gl.uniform1f(uPointSizeLoc,5.0); //store data to the shader's uniform variable //SCALE
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, bufVerts);
 			gl.enableVertexAttribArray(aPositionLoc);

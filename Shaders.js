@@ -53,4 +53,12 @@ class ShaderUtil{
 
 		return prog;
 	}
+	static domShaderProgram(gl,vectID,fragID,doValidate){
+		var vShaderTxt = ShaderUtil.domShaderSrc(vectID);						 	if(!vShaderTxt) return null;
+		var fShaderTxt = ShaderUtil.domShaderSrc(fragID);						 	if(!fShaderTxt) return null;
+		var vShader    = ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER) 	if(!vShader) 	return null;
+		var fShader    = ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER)  if(!fShader) 	return null; 
+	
+		return ShaderUtil.createProgram(gl,vShader,fShader,true);
+	}
 }
