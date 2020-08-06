@@ -11,6 +11,7 @@
 			gVertCount = 0,
 			uPointSizeLoc = -1,
 			uAngle = 0,
+			uRadius = 0,
 			gRLoop;
 
 		window.addEventListener("load", function(){
@@ -33,7 +34,8 @@
 
 			gl.useProgram(shaderProg);
 			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position");
-				
+			uAngle = gl.getUniformLocation(shaderProg,"uAngle");
+			uRadius = gl.getUniformLocation(shaderProg,"uRadius");
 			uPointSizeLoc = gl.getUniformLocation(shaderProg,"uPointSize");
 			gl.useProgram(null);
 
@@ -51,8 +53,24 @@
 			RLoop = new RenderLoop(onRender).start();
 		});
 
+		var gPointSize = 0;
+			gPSizeStep = 3,
+			gAngle = 0,
+			gAngleStep = (Math.PI / 180.0) * 90,
+			gRadius = 0,
+			gRadiusStep = 0.1;
+
+		var growing = true;
 		function onRender(dt){
-			gl.uniform1f(uPointSizeLoc,50.0);	
+			gPointSize += gPSizeStep * dt;
+			var size = (Math.sin(gPointSize)*10.0)+20;
+			gl.uniform1f(uPointSizeLoc,size);
+
+			gAngle += gAngleStep *dt;
+			gl.uniform1f(uAngle,gAngle);
+
+			gl.uniform1f(uRadius,0.5);
+
 			gl.fClear();
 			gl.drawArrays(gl.POINTS, 0, gVertCount)
 		}
@@ -67,11 +85,14 @@
 		
 		uniform float uPointSize;
 		uniform float uAngle;
+		uniform float uRadius;
 
 		void main(void){
 			gl_PointSize = uPointSize;
-			//gl_Position = vec4(a_position, 1.0);
-			gl_Position = vec4(0,0,0,1);
+			gl_Position = vec4(cos(uAngle) *uRadius + a_position.x,
+			sin(uAngle) * uRadius + a_position.y,
+			a_position.z,
+			1.0);
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
