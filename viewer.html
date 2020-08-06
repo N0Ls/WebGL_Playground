@@ -69,7 +69,8 @@
 			gAngle += gAngleStep *dt;
 			gl.uniform1f(uAngle,gAngle);
 
-			gl.uniform1f(uRadius,0.5);
+			gRadius += gRadiusStep * dt;
+			gl.uniform1f(uRadius,Math.sin(gRadius));
 
 			gl.fClear();
 			gl.drawArrays(gl.POINTS, 0, gVertCount)
