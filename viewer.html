@@ -26,7 +26,7 @@
 
 			gShader = new TestShader(gl);
 
-			var mesh = gl.fCreateMeshVAO("dots", null, [0,0,0]);
+			var mesh = gl.fCreateMeshVAO("dots", null, [0,0,0, 0.1,0.1,0, 0.1,-0.1,0, -0.1,-0.1,0, -0.1,0.1,0]);
 			mesh.drawMode = gl.POINTS;
 
 			gModal = new Modal(mesh);
@@ -96,7 +96,7 @@
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
 		in vec3 a_position;
 		
-		uniform float uPointSize;
+		uniform mediump float uPointSize;
 		uniform float uAngle;
 		uniform float uRadius;
 
@@ -111,10 +111,12 @@
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
 
+		uniform float uPointSize;
 		out vec4 finalColor;
 		
 		void main(void) {
-			finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+			float c = (40.0 - uPointSize) / 20.0;
+			finalColor = vec4(c, c, c, 1.0);
 		}
 	</script>
 </body>
