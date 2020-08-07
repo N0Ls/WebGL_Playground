@@ -6,6 +6,7 @@
 	<script src="gl.js"></script>
 	<script src="Shaders.js"></script>
 	<script src="RenderLoop.js"></script>
+	<script src="Modal.js"></script>
 	<script>
 		//Global variables init
 		var gl,
@@ -13,37 +14,23 @@
 			uPointSizeLoc = -1,
 			uAngle = 0,
 			uRadius = 0,
-			gRLoop;
+			gRLoop,
+			gShader = null,
+			gModal = null;
+
 
 		window.addEventListener("load", function(){
 			gl= GLInstance("glcanvas"); // Init context
 			gl.fSetSize(500,500); //Setting size
 			gl.fClear(); //Reseting context
 
-			//Creating shader program
-			shaderProg = ShaderUtil.domShaderProgram(gl,"vertex_shader", "fragment_shader", true);
+			gShader = new TestShader(gl);
 
-			//Using program
-			gl.useProgram(shaderProg);
+			var mesh = gl.fCreateMeshVAO("dots", null, [0,0,0]);
+			mesh.drawMode = gl.POINTS;
 
-			//Getting locations of attributes
-			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position");
-			uAngle = gl.getUniformLocation(shaderProg,"uAngle");
-			uRadius = gl.getUniformLocation(shaderProg,"uRadius");
-			uPointSizeLoc = gl.getUniformLocation(shaderProg,"uPointSize");
-			gl.useProgram(null);
-
-			//data buffer setup
-			var aryVerts = new Float32Array([0,0,0]),
-				bufVerts = gl.fCreateArrayBuffer(aryVerts);
-
-			gVertCount = aryVerts.length / 3;
-			
-			gl.useProgram(shaderProg);				
-			gl.bindBuffer(gl.ARRAY_BUFFER,bufVerts);				
-			gl.enableVertexAttribArray(aPositionLoc);				
-			gl.vertexAttribPointer(aPositionLoc,3,gl.FLOAT,false,0,0);
-			gl.bindBuffer(gl.ARRAY_BUFFER,null);					
+			gModal = new Modal(mesh);
+				
 			RLoop = new RenderLoop(onRender).start();
 		});
 
@@ -56,7 +43,7 @@
 
 		var growing = true;
 
-		
+
 		function onRender(dt){
 			gPointSize += gPSizeStep * dt;
 			var size = (Math.sin(gPointSize)*10.0)+20;
@@ -70,6 +57,27 @@
 
 			gl.fClear();
 			gl.drawArrays(gl.POINTS, 0, gVertCount)
+		}
+
+		class TestShader extends Shader{
+			constructor(gl){
+				var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
+					fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
+				super(gl,vertSrc,fragSrc);	//Call the base class constructor which will setup most of what we need
+
+				//Our shader uses custom uniforms, this is the time to get its location for future use.
+				this.uniformLoc.uPointSize	= gl.getUniformLocation(this.program,"uPointSize");
+				this.uniformLoc.uAngle		= gl.getUniformLocation(this.program,"uAngle");
+
+				gl.useProgram(null); //Done setting up shader
+			}
+
+				//Simple function that passes in Angle and Pointsize uniform data to the shader program.
+			set(size,angle){
+				this.gl.uniform1f(this.uniformLoc.uPointSize,size);
+				this.gl.uniform1f(this.uniformLoc.uAngle,angle);
+				return this;
+			}
 		}
 	</script>
 </head>
