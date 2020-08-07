@@ -73,4 +73,12 @@ class ShaderUtil{
 		
 		return ShaderUtil.createProgram(gl,vShader,fShader,true);
 	}
+
+	static getStandardAttribLocations(gl,program){
+		return{
+			position : gl.getAttribLocation(program, ATTR_POSITION_NAME);
+			norm : gl.getAttribLocation(program, ATTR_NORMAL_NAME);
+			uv : gl.getAttribLocation(program, ATTR_UV_NAME);
+		}
+	}
 }
