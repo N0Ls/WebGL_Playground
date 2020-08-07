@@ -1,3 +1,48 @@
+class Shader{
+	constructor(gl,vertShaderSrc,fragShaderSrc){
+		this.program = ShaderUtil.createProgramFromText(gl,vertShaderSrc,fragShaderSrc,true);
+
+		if(this.program != null){
+			this.gl = gl;
+			gl.useProgram(this.program);
+			this.attribLoc = ShaderUtil.getStandardAttribLocations(gl,this.program);
+			this.uniformLoc = {};	//TODO : Replace in later lessons with get standardUniformLocations.
+		}
+
+		//Note :: Extended shaders should deactivate shader when done calling super and setting up custom parts in the constructor.
+	}
+
+	//...................................................
+	//Methods
+	activate(){ this.gl.useProgram(this.program); return this; }
+	deactivate(){ this.gl.useProgram(null); return this; }
+
+	//function helps clean up resources when shader is no longer needed.
+	dispose(){
+		//unbind the program if its currently active
+		if(this.gl.getParameter(this.gl.CURRENT_PROGRAM) === this.program) this.gl.useProgram(null);
+		this.gl.deleteProgram(this.program);
+	}
+
+	//...................................................
+	//RENDER RELATED METHODS
+
+	//Setup custom properties
+	preRender(){} //abstract method, extended object may need need to do some things before rendering.
+
+	//Handle rendering a modal
+	renderModal(modal){
+		this.gl.bindVertexArray(modal.mesh.vao);	//Enable VAO, this will set all the predefined attributes for the shader
+		
+		if(modal.mesh.indexCount) this.gl.drawElements(modal.mesh.drawMode, modal.mesh.indexCount, gl.UNSIGNED_SHORT, 0);
+		else this.gl.drawArrays(modal.mesh.drawMode, 0, modal.mesh.vertexCount);
+
+		this.gl.bindVertexArray(null);
+
+		return this;
+	}
+}
+
 class ShaderUtil{
 	//Getting shader code from page
 	static domShaderSrc(elmID){
