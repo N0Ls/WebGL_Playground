@@ -27,6 +27,11 @@ class ShaderUtil{
 		var prog = gl.createProgram();
 		gl.attachShader(prog,vShader);
 		gl.attachShader(prog,fShader);
+		
+		gl.bindAttribLocation(prog, ATTR_POSITION_LOC, ATTR_POSITION_NAME);
+		gl.bindAttribLocation(prog, ATTR_NORMAL_LOC, ATTR_NORMAL_NAME);
+		gl.bindAttribLocation(prog, ATTR_UV_LOC, ATTR_UV_NAME);
+
 		gl.linkProgram(prog);
 
 		//check if successful
@@ -54,11 +59,18 @@ class ShaderUtil{
 		return prog;
 	}
 	static domShaderProgram(gl,vectID,fragID,doValidate){
-		var vShaderTxt = ShaderUtil.domShaderSrc(vectID);						 	if(!vShaderTxt) return null;
-		var fShaderTxt = ShaderUtil.domShaderSrc(fragID);						 	if(!fShaderTxt) return null;
-		var vShader    = ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER); 	if(!vShader) return null;
-		var fShader    = ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER);  if(!fShader) return null; 
-	
+		var vShaderTxt	= ShaderUtil.domShaderSrc(vectID);								if(!vShaderTxt)	return null;
+		var fShaderTxt	= ShaderUtil.domShaderSrc(fragID);								if(!fShaderTxt)	return null;
+		var vShader		= ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER);		if(!vShader)	return null;
+		var fShader		= ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER);	if(!fShader){	gl.deleteShader(vShader); return null; }
+		
+		return ShaderUtil.createProgram(gl,vShader,fShader,true);
+	}
+
+	static createProgramFromText(gl,vShaderTxt,fShaderTxt,doValidate){
+		var vShader		= ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER);		if(!vShader)	return null;
+		var fShader		= ShaderUtil.createShader(gl,fShaderTxt,gl.FRAGMENT_SHADER);	if(!fShader){	gl.deleteShader(vShader); return null; }
+		
 		return ShaderUtil.createProgram(gl,vShader,fShader,true);
 	}
 }
