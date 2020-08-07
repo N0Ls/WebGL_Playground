@@ -7,6 +7,7 @@
 	<script src="Shaders.js"></script>
 	<script src="RenderLoop.js"></script>
 	<script>
+		//Global variables init
 		var gl,
 			gVertCount = 0,
 			uPointSizeLoc = -1,
@@ -19,20 +20,13 @@
 			gl.fSetSize(500,500); //Setting size
 			gl.fClear(); //Reseting context
 
-			//Shader steps
-			// Get shaders texts
-			/*var vShaderTxt = ShaderUtil.domShaderSrc("vertex_shader"), 
-				fShaderTxt = ShaderUtil.domShaderSrc("fragment_shader"),
+			//Creating shader program
+			shaderProg = ShaderUtil.domShaderProgram(gl,"vertex_shader", "fragment_shader", true);
 
-				//Compile shaders
-				vShader = ShaderUtil.createShader(gl,vShaderTxt,gl.VERTEX_SHADER),
-				fShader = ShaderUtil.createShader(gl,fShaderTxt, gl.FRAGMENT_SHADER),
-
-				//Link shaders into program
-				shaderProg = ShaderUtil.createProgram(gl,vShader,fShader,true);*/
-				shaderProg = ShaderUtil.domShaderProgram(gl,"vertex_shader", "fragment_shader", true);
-
+			//Using program
 			gl.useProgram(shaderProg);
+
+			//Getting locations of attributes
 			var aPositionLoc = gl.getAttribLocation(shaderProg,"a_position");
 			uAngle = gl.getUniformLocation(shaderProg,"uAngle");
 			uRadius = gl.getUniformLocation(shaderProg,"uRadius");
@@ -61,6 +55,8 @@
 			gRadiusStep = 0.1;
 
 		var growing = true;
+
+		
 		function onRender(dt){
 			gPointSize += gPSizeStep * dt;
 			var size = (Math.sin(gPointSize)*10.0)+20;
