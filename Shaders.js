@@ -121,9 +121,9 @@ class ShaderUtil{
 
 	static getStandardAttribLocations(gl,program){
 		return{
-			position : gl.getAttribLocation(program, ATTR_POSITION_NAME);
-			norm : gl.getAttribLocation(program, ATTR_NORMAL_NAME);
-			uv : gl.getAttribLocation(program, ATTR_UV_NAME);
-		}
+			position : gl.getAttribLocation(program, ATTR_POSITION_NAME),
+			norm : gl.getAttribLocation(program, ATTR_NORMAL_NAME),
+			uv : gl.getAttribLocation(program, ATTR_UV_NAME)
+		};
 	}
 }

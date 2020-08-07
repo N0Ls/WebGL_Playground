@@ -45,7 +45,7 @@
 
 
 		function onRender(dt){
-			gPointSize += gPSizeStep * dt;
+/*			gPointSize += gPSizeStep * dt;
 			var size = (Math.sin(gPointSize)*10.0)+20;
 			gl.uniform1f(uPointSizeLoc,size);
 
@@ -56,7 +56,15 @@
 			gl.uniform1f(uRadius,Math.sin(gRadius));
 
 			gl.fClear();
-			gl.drawArrays(gl.POINTS, 0, gVertCount)
+			gl.drawArrays(gl.POINTS, 0, gVertCount);*/
+
+			gl.fClear();
+
+			gShader.activate();
+			gShader.set(
+				(Math.sin((gPointSize += gPSizeStep * dt))*10.0)+30.0,
+				(gAngle += gAngleStep *dt));
+			gShader.renderModal(gModal);
 		}
 
 		class TestShader extends Shader{
@@ -94,8 +102,8 @@
 
 		void main(void){
 			gl_PointSize = uPointSize;
-			gl_Position = vec4(cos(uAngle) *uRadius + a_position.x,
-			sin(uAngle) * uRadius + a_position.y,
+			gl_Position = vec4(cos(uAngle) *0.8 + a_position.x,
+			sin(uAngle) * 0.8 + a_position.y,
 			a_position.z,
 			1.0);
 		}
