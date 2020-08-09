@@ -9,28 +9,21 @@
 	<script src="Modal.js"></script>
 	<script>
 		//Global variables init
-		var gl,
-			gVertCount = 0,
-			uPointSizeLoc = -1,
-			uAngle = 0,
-			uRadius = 0,
-			gRLoop,
-			gShader = null,
-			gModal = null;
+		var gl, gRLoop,	gShader, gModal;
 
-
-		window.addEventListener("load", function(){
-			gl= GLInstance("glcanvas"); // Init context
-			gl.fSetSize(500,500); //Setting size
-			gl.fClear(); //Reseting context
-
-			gShader = new TestShader(gl);
-
-			var mesh = gl.fCreateMeshVAO("dots", null, [0,0,0, 0.1,0.1,0, 0.1,-0.1,0, -0.1,-0.1,0, -0.1,0.1,0]);
-			mesh.drawMode = gl.POINTS;
-
+		window.addEventListener("load",function(){
+			//Main Setup
+			gl = GLInstance("glcanvas").fSetSize(500,500).fClear();
+			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
+			
+			//Setup our modal
+			var mesh = gl.fCreateMeshVAO("lines",null,[ 0,1,0, 0,-1,0     ,-1,0,0, 1,0,0 ]);
+			mesh.drawMode = gl.LINES;
 			gModal = new Modal(mesh);
-				
+			
+			//gModal = new Modal(Primatives.GridAxis.createMesh(gl));	
+
+			//Start Rendering
 			RLoop = new RenderLoop(onRender).start();
 		});
 
@@ -41,7 +34,6 @@
 			gRadius = 0,
 			gRadiusStep = 0.1;
 
-		var growing = true;
 
 
 		function onRender(dt){
@@ -59,32 +51,21 @@
 			gl.drawArrays(gl.POINTS, 0, gVertCount);*/
 
 			gl.fClear();
-
 			gShader.activate();
-			gShader.set(
-				(Math.sin((gPointSize += gPSizeStep * dt))*10.0)+30.0,
-				(gAngle += gAngleStep *dt));
 			gShader.renderModal(gModal);
 		}
 
 		class TestShader extends Shader{
-			constructor(gl){
+			constructor(gl, aryColor){
 				var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
 					fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
-				super(gl,vertSrc,fragSrc);	//Call the base class constructor which will setup most of what we need
+				super(gl,vertSrc,fragSrc);
 
-				//Our shader uses custom uniforms, this is the time to get its location for future use.
-				this.uniformLoc.uPointSize	= gl.getUniformLocation(this.program,"uPointSize");
-				this.uniformLoc.uAngle		= gl.getUniformLocation(this.program,"uAngle");
+				var uColor	= gl.getUniformLocation(this.program,"uColor");
+
+				gl.uniform3fv(uColor, aryColor);
 
 				gl.useProgram(null); //Done setting up shader
-			}
-
-				//Simple function that passes in Angle and Pointsize uniform data to the shader program.
-			set(size,angle){
-				this.gl.uniform1f(this.uniformLoc.uPointSize,size);
-				this.gl.uniform1f(this.uniformLoc.uAngle,angle);
-				return this;
 			}
 		}
 	</script>
@@ -95,28 +76,25 @@
 	</div>
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
 		in vec3 a_position;
+		layout(location=4) in float a_color;
 		
-		uniform mediump float uPointSize;
-		uniform float uAngle;
-		uniform float uRadius;
+		uniform vec3 uColor[4];
+
+		out lowp vec4 color;
 
 		void main(void){
-			gl_PointSize = uPointSize;
-			gl_Position = vec4(cos(uAngle) *0.8 + a_position.x,
-			sin(uAngle) * 0.8 + a_position.y,
-			a_position.z,
-			1.0);
+			color = vec4(uColor[int(a_color)],1.0);
+			gl_Position = vec4(a_position,1.0);
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
 
-		uniform float uPointSize;
+		in vec4 color;
 		out vec4 finalColor;
 		
 		void main(void) {
-			float c = (40.0 - uPointSize) / 20.0;
-			finalColor = vec4(c, c, c, 1.0);
+			finalColor = color;
 		}
 	</script>
 </body>
