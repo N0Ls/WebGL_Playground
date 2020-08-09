@@ -36,5 +36,11 @@ Primatives.GridAxis = class{
 			,strideLen
 			,Float32Array.BYTES_PER_ELEMENT * 3
 		);
+
+		gl.bindVertexArray(null);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.mMeshCache["grid"] = mesh;
+
+		return mesh;
 	}
 }
