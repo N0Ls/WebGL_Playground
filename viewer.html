@@ -4,8 +4,10 @@
 	<title>WebGL Playground</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<script src="gl.js"></script>
+	<script src="Math.js"></script>
 	<script src="Shaders.js"></script>
 	<script src="RenderLoop.js"></script>
+	<script src="Transform.js"></script>
 	<script src="Modal.js"></script>
 	<script src="Primatives.js"></script>
 	<script>
@@ -17,12 +19,9 @@
 			gl = GLInstance("glcanvas").fSetSize(500,500).fClear();
 			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
 			
-			//Setup our modal
-			/*var mesh = gl.fCreateMeshVAO("lines",null,[ 0,1,0, 0,-1,0     ,-1,0,0, 1,0,0 ]);
-			mesh.drawMode = gl.LINES;
-			gModal = new Modal(mesh);*/
-			
-			gModal = new Modal(Primatives.GridAxis.createMesh(gl));	
+
+			gModal = new Modal(Primatives.GridAxis.createMesh(gl));
+			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.8,0.8,0);
 
 			//Start Rendering
 			RLoop = new RenderLoop(onRender).start();
@@ -38,22 +37,10 @@
 
 
 		function onRender(dt){
-/*			gPointSize += gPSizeStep * dt;
-			var size = (Math.sin(gPointSize)*10.0)+20;
-			gl.uniform1f(uPointSizeLoc,size);
-
-			gAngle += gAngleStep *dt;
-			gl.uniform1f(uAngle,gAngle);
-
-			gRadius += gRadiusStep * dt;
-			gl.uniform1f(uRadius,Math.sin(gRadius));
-
-			gl.fClear();
-			gl.drawArrays(gl.POINTS, 0, gVertCount);*/
 
 			gl.fClear();
 			gShader.activate();
-			gShader.renderModal(gModal);
+			gShader.renderModal(gModal.preRender());
 		}
 
 		class TestShader extends Shader{
