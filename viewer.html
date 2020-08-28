@@ -21,7 +21,7 @@
 			
 
 			gModal = new Modal(Primatives.GridAxis.createMesh(gl));
-			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.8,0.8,0);
+			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.4,-0.8,0);
 
 			//Start Rendering
 			RLoop = new RenderLoop(onRender).start();
@@ -37,10 +37,18 @@
 
 
 		function onRender(dt){
+			gl.fClear();	
+			var p = gModal.transform.position,
+			angle = Math.atan2(p.y,p.x)  + (1*dt),
+			radius = Math.sqrt(p.x * p.x + p.y * p.y),
+			scale = Math.max(0.2,  Math.abs(Math.sin(angle)) * 1.2  );
 
-			gl.fClear();
-			gShader.activate();
-			gShader.renderModal(gModal.preRender());
+			gShader.activate().renderModal(
+					gModal.setScale( scale, scale/4, 1)
+							.setPosition( radius * Math.cos(angle), radius * Math.sin(angle), 0 )
+							.addRotation( 30 * dt, 60 * dt, 15 * dt )
+							.preRender()
+			);
 		}
 
 		class TestShader extends Shader{
@@ -66,13 +74,14 @@
 		in vec3 a_position;
 		layout(location=4) in float a_color;
 		
+		uniform mat4 uMVMatrix;
 		uniform vec3 uColor[4];
 
 		out lowp vec4 color;
 
 		void main(void){
 			color = vec4(uColor[int(a_color)],1.0);
-			gl_Position = vec4(a_position,1.0);
+			gl_Position = uMVMatrix * vec4(a_position,1.0);
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
