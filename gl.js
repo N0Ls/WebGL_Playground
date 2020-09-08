@@ -102,5 +102,7 @@ function GLInstance(canvasID){
 		this.viewport(0,0,w,h); 
 		return this;
 	}
+
+	gl.fFitScreen = function(wp,hp){ return this.fSetSize(window.innerWidth * (wp||1), window.innerHeight* (hp||1));}
 	return gl;
 }

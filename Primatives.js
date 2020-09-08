@@ -1,7 +1,7 @@
 var Primatives = {};
 
 Primatives.GridAxis = class{
-	static createModal(gl, inclAxis){ return new Modal(Primatives.GridAxis.createMesh(gl)); }
+	static createModal(gl, inclAxis){ return new Modal(Primatives.GridAxis.createMesh(gl, inclAxis)); }
 	static createMesh(gl, inclAxis){
 		//Dynamiclly create a grid
 		var verts = [],
