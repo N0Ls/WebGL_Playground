@@ -10,17 +10,26 @@
 	<script src="Transform.js"></script>
 	<script src="Modal.js"></script>
 	<script src="Primatives.js"></script>
+	<script src="Camera.js"></script>
+
 	<script>
 		//Global variables init
-		var gl, gRLoop,	gShader, gModal;
+		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl;
+		var gGridShader, gGridModal;
 
 		window.addEventListener("load",function(){
 			//Main Setup
 			gl = GLInstance("glcanvas").fSetSize(500,500).fClear();
-			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
-			
 
-			gModal = new Modal(Primatives.GridAxis.createMesh(gl));
+			gCamera = new Camera(gl);
+			gCamera.transform.position.set(0,1,3);
+			gCameraCtrl = new CameraController(gl,gCamera);
+
+			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
+			gShader.activate().setPerspective(gCamera.projectionMatrix).deactivate();
+
+
+			gModal = new Modal(Primatives.GridAxis.createMesh(gl,false));
 			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.4,-0.8,0);
 
 			//Start Rendering
@@ -37,18 +46,10 @@
 
 
 		function onRender(dt){
+			gCamera.updateViewMatrix();
 			gl.fClear();	
-			var p = gModal.transform.position,
-			angle = Math.atan2(p.y,p.x)  + (1*dt),
-			radius = Math.sqrt(p.x * p.x + p.y * p.y),
-			scale = Math.max(0.2,  Math.abs(Math.sin(angle)) * 1.2  );
 
-			gShader.activate().renderModal(
-					gModal.setScale( scale, scale/4, 1)
-							.setPosition( radius * Math.cos(angle), radius * Math.sin(angle), 0 )
-							.addRotation( 30 * dt, 60 * dt, 15 * dt )
-							.preRender()
-			);
+			gShader.activate().setCameraMatrix(gCamera.viewMatrix).renderModal(gModal.preRender());
 		}
 
 		class TestShader extends Shader{
@@ -74,14 +75,17 @@
 		in vec3 a_position;
 		layout(location=4) in float a_color;
 		
+		uniform mat4 uPMatrix;
 		uniform mat4 uMVMatrix;
+		uniform mat4 uCameraMatrix;
+
 		uniform vec3 uColor[4];
 
 		out lowp vec4 color;
 
 		void main(void){
 			color = vec4(uColor[int(a_color)],1.0);
-			gl_Position = uMVMatrix * vec4(a_position,1.0);
+			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position,1.0);
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
