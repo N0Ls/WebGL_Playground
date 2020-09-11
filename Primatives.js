@@ -7,8 +7,8 @@ Primatives.Quad = class {
 			aUV = [ 0,0, 0,1, 1,1, 1,0 ],
 			aIndex = [ 0,1,2, 2,3,0 ];
 		var mesh = gl.fCreateMeshVAO("Quad",aIndex,aVert,null,aUV);
-		mesh.noCulling = false;
-		mesh.doBlending = false;
+		mesh.noCulling = true;
+		mesh.doBlending = true;
 
 		return mesh;
 	}
