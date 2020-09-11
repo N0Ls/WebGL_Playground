@@ -17,7 +17,7 @@
 		//Global variables init
 		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl;
 		var gGridShader, gGridModal;
-		var gModal2;
+		var gModal2, gModal3;
 
 		window.addEventListener("load",function(){
 			//Main Setup
@@ -35,6 +35,8 @@
 			gModal = Primatives.Quad.createModal(gl);
 			gModal.setPosition(0,1,0).setScale(0.2,0.2,0.2);
 			gModal2 = new Modal(gl.mMeshCache["Quad"]);
+
+			gModal3 = Primatives.MultiQuad.createModal(gl);
 
 			//Old Code
 /*			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
@@ -66,7 +68,8 @@
 			gShader.activate()
 				.setCameraMatrix(gCamera.viewMatrix)
 				.renderModal( gModal.preRender() )
-				.renderModal( gModal2.preRender() );
+				.renderModal( gModal2.preRender() )
+				.renderModal(gModal3.preRender());
 		}
 
 		class TestShader extends Shader{
@@ -112,13 +115,13 @@
 			finalColor = vec4(c,c,c,1.0-c);
 
 			//circle
-			vec2 delta = uv - vec2(0.5,0.5); //delta position from center;
+			/*vec2 delta = uv - vec2(0.5,0.5); //delta position from center;
 			float dist = 0.5 - sqrt(delta.x*delta.x + delta.y*delta.y);
 			float border = 0.1;
 			float a = 0.0;
 			if(dist > border) a = 0.0;
 			else if(dist > 0.0) a = 1.0;
-			finalColor = vec4(0,0,0,a);
+			finalColor = vec4(0,0,0,a);*/
 		}
 	</script>
 </body>
