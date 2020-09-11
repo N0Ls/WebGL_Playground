@@ -1,5 +1,19 @@
 var Primatives = {};
 
+Primatives.Quad = class {
+	static createModal(gl){ return new Modal(Primatives.Quad.createMesh(gl)); }
+	static createMesh(gl){
+		var aVert = [ -0.5,0.5,0, -0.5,-0.5,0, 0.5,-0.5,0, 0.5,0.5,0 ],
+			aUV = [ 0,0, 0,1, 1,1, 1,0 ],
+			aIndex = [ 0,1,2, 2,3,0 ];
+		var mesh = gl.fCreateMeshVAO("Quad",aIndex,aVert,null,aUV);
+		mesh.noCulling = false;
+		mesh.doBlending = false;
+
+		return mesh;
+	}
+}
+
 Primatives.GridAxis = class{
 	static createModal(gl, inclAxis){ return new Modal(Primatives.GridAxis.createMesh(gl, inclAxis)); }
 	static createMesh(gl, inclAxis){

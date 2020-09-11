@@ -16,23 +16,31 @@ function GLInstance(canvasID){
 	//Setup custom properties
 	gl.mMeshCache = [];
 
+	//
+	gl.cullFace(gl.BACK);								//Back is also default
+	gl.frontFace(gl.CCW);								//Dont really need to set it, its ccw by default.
+	gl.enable(gl.DEPTH_TEST);							//Shouldn't use this, use something else to add depth detection
+	gl.enable(gl.CULL_FACE);							//Cull back face, so only show triangles that are created clockwise
+	gl.depthFunc(gl.LEQUAL);							//Near things obscure far things
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);	//Setup default alpha blending
+
 	//Setup
 	gl.clearColor(1.0,1.0,1.0,1.0);
 
 	//Methods
 	gl.fClear = function(){this.clear(this.COLOR_BUFFER_BIT | this.DEPTH_BUFFER_BIT); return this;}
 
-	gl.fCreateArrayBuffer = function(floatAry, isStatic){
-		if(isStatic === undefined) isStatic = true;
+	gl.fCreateArrayBuffer = function(floatAry,isStatic){
+		if(isStatic === undefined) isStatic = true; //So we can call this function without setting isStatic
 
 		var buf = this.createBuffer();
-		this.bindBuffer(this.ARRAY_BUFFER, buf);
-		this.bufferData(this.ARRAY_BUFFER,floatAry, (isStatic)? this.STATIC_DRAW : this.DYNAMIC_DRAW);
-		this.bindBuffer(this.ARRAY_BUFFER, null);
+		this.bindBuffer(this.ARRAY_BUFFER,buf);
+		this.bufferData(this.ARRAY_BUFFER, floatAry, (isStatic)? this.STATIC_DRAW : this.DYNAMIC_DRAW );
+		this.bindBuffer(this.ARRAY_BUFFER,null);
 		return buf;
 	}
 
-	gl.fCreateMeshVAO = function(name,aryInd,aryVert,aryNorm,aryUV){
+gl.fCreateMeshVAO = function(name,aryInd,aryVert,aryNorm,aryUV){
 		var rtn = { drawMode:this.TRIANGLES };
 
 		//Create and bind vao
@@ -77,15 +85,16 @@ function GLInstance(canvasID){
 		if(aryInd !== undefined && aryInd != null){
 			rtn.bufIndex = this.createBuffer();
 			rtn.indexCount = aryInd.length;
-			this.bindBuffer(this.ELEMENT_ARRAY_BUFFER, rtn.bufIndex);
+			this.bindBuffer(this.ELEMENT_ARRAY_BUFFER, rtn.bufIndex);  
 			this.bufferData(this.ELEMENT_ARRAY_BUFFER, new Uint16Array(aryInd), this.STATIC_DRAW);
-			this.bindBuffer(this.ELEMENT_ARRAY_BUFFER,null);
+			//this.bindBuffer(this.ELEMENT_ARRAY_BUFFER,null); //TODO REMOVE THIS AND ADD TO CLEANUP
 		}
 
 		//Clean up
 		this.bindVertexArray(null);					//Unbind the VAO, very Important. always unbind when your done using one.
 		this.bindBuffer(this.ARRAY_BUFFER,null);	//Unbind any buffers that might be set
-
+		if(aryInd != null && aryInd !== undefined)  this.bindBuffer(this.ELEMENT_ARRAY_BUFFER,null);
+		
 		this.mMeshCache[name] = rtn;
 		return rtn;
 	}

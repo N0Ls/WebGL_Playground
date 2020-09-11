@@ -17,6 +17,7 @@
 		//Global variables init
 		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl;
 		var gGridShader, gGridModal;
+		var gModal2;
 
 		window.addEventListener("load",function(){
 			//Main Setup
@@ -29,6 +30,12 @@
 			gGridShader = new GridAxisShader(gl,gCamera.projectionMatrix);
 			gGridModal = Primatives.GridAxis.createModal(gl,true);
 
+			gShader = new TestShader(gl,gCamera.projectionMatrix);
+			
+			gModal = Primatives.Quad.createModal(gl);
+			gModal.setPosition(0,1,0).setScale(0.2,0.2,0.2);
+			gModal2 = new Modal(gl.mMeshCache["Quad"]);
+
 			//Old Code
 /*			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
 			gShader.activate().setPerspective(gCamera.projectionMatrix).deactivate();
@@ -38,7 +45,7 @@
 			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.4,-0.8,0);*/
 
 			//Start Rendering
-			RLoop = new RenderLoop(onRender).start();
+			RLoop = new RenderLoop(onRender,30).start();
 		});
 
 		var gPointSize = 0;
@@ -55,20 +62,23 @@
 			gl.fClear();	
 
 			gGridShader.activate().setCameraMatrix(gCamera.viewMatrix).renderModal(gGridModal.preRender());
+
+			gShader.activate()
+				.setCameraMatrix(gCamera.viewMatrix)
+				.renderModal( gModal.preRender() )
+				.renderModal( gModal2.preRender() );
 		}
 
 		class TestShader extends Shader{
-			constructor(gl, aryColor){
-				var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
-					fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
-				super(gl,vertSrc,fragSrc);
+				constructor(gl,pMatrix){
+					var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
+						fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
+					super(gl,vertSrc,fragSrc);
 
-				var uColor	= gl.getUniformLocation(this.program,"uColor");
-
-				gl.uniform3fv(uColor, aryColor);
-
-				gl.useProgram(null); //Done setting up shader
-			}
+					//Standrd Uniforms
+					this.setPerspective(pMatrix);
+					gl.useProgram(null); //Done setting up shader
+				}
 		}
 	</script>
 </head>
@@ -77,30 +87,29 @@
 		<canvas id="glcanvas"></canvas>
 	</div>
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
-		in vec3 a_position;
-		layout(location=4) in float a_color;
-		
+		in vec3 a_position;	//Standard position data.
+		in vec2 a_uv;
+
 		uniform mat4 uPMatrix;
 		uniform mat4 uMVMatrix;
 		uniform mat4 uCameraMatrix;
 
-		uniform vec3 uColor[4];
-
-		out lowp vec4 color;
+		out vec2 uv;
 
 		void main(void){
-			color = vec4(uColor[int(a_color)],1.0);
-			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position,1.0);
+			uv = a_uv;
+			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position, 1.0); 
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
+		in vec2 uv;
 
-		in vec4 color;
 		out vec4 finalColor;
-		
-		void main(void) {
-			finalColor = color;
+		void main(void){
+			//Square Border
+			float c = (uv.x <= 0.1 || uv.x >=0.9 || uv.y <= 0.1 || uv.y >= 0.9)? 0.0 : 1.0;
+			finalColor = vec4(c,c,c,1.0-c);
 		}
 	</script>
 </body>
