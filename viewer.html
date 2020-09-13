@@ -27,10 +27,12 @@
 			gCamera.transform.position.set(0,1,3);
 			gCameraCtrl = new CameraController(gl,gCamera);
 
+			gl.fLoadTexture("tex001", document.getElementById("imgTex"));
+
 			gGridShader = new GridAxisShader(gl,gCamera.projectionMatrix);
 			gGridModal = Primatives.GridAxis.createModal(gl,true);
 
-			gShader = new TestShader(gl,gCamera.projectionMatrix);
+			gShader = new TestShader(gl,gCamera.projectionMatrix).setTexture(gl.mTextureCache["tex001"]);
 			
 			gModal = Primatives.Quad.createModal(gl);
 			gModal.setPosition(0,1,0).setScale(0.2,0.2,0.2);
@@ -65,10 +67,8 @@
 
 			gGridShader.activate().setCameraMatrix(gCamera.viewMatrix).renderModal(gGridModal.preRender());
 
-			gShader.activate()
+			gShader.activate().preRender()
 				.setCameraMatrix(gCamera.viewMatrix)
-				.renderModal( gModal.preRender() )
-				.renderModal( gModal2.preRender() )
 				.renderModal(gModal3.preRender());
 		}
 
@@ -80,8 +80,18 @@
 
 					//Standrd Uniforms
 					this.setPerspective(pMatrix);
+					this.mainTexture = -1;
 					gl.useProgram(null); //Done setting up shader
 				}
+			setTexture(texID){this.mainTexture=texID; return this;}
+
+			preRender(){
+				this.gl.activeTexture(this.gl.TEXTURE0);
+				this.gl.bindTexture(this.gl.TEXTURE_2D, this.mainTexture);
+				this.gl.uniform1i(this.uniformLoc.mainTexture,0);
+
+				return this;
+			}
 		}
 	</script>
 </head>
@@ -89,6 +99,7 @@
 	<div>
 		<canvas id="glcanvas"></canvas>
 	</div>
+	<img src="UV_Grid_Lrg.jpg" id="imgTex" style="display: none;">
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
 		in vec3 a_position;	//Standard position data.
 		in vec2 a_uv;
@@ -97,22 +108,22 @@
 		uniform mat4 uMVMatrix;
 		uniform mat4 uCameraMatrix;
 
-		out vec2 uv;
+		out highp vec2 texCoord;
 
 		void main(void){
-			uv = a_uv;
+			texCoord = a_uv;
 			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position, 1.0); 
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
-		in vec2 uv;
+		in highp vec2 texCoord;
+		uniform sampler2D uMainTex;
 
 		out vec4 finalColor;
 		void main(void){
-			//Square Border
-			float c = (uv.x <= 0.1 || uv.x >=0.9 || uv.y <= 0.1 || uv.y >= 0.9)? 0.0 : 1.0;
-			finalColor = vec4(c,c,c,1.0-c);
+
+			finalColor = texture(uMainTex, vec2(texCoord.s, texCoord.t));
 
 			//circle
 			/*vec2 delta = uv - vec2(0.5,0.5); //delta position from center;
