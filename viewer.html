@@ -18,7 +18,6 @@
 		//Global variables init
 		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl;
 		var gGridShader, gGridModal;
-		var gModal2, gModal3;
 
 		window.addEventListener("load",function(){
 			//Main Setup
@@ -37,7 +36,7 @@
 			gShader = new TestShader(gl,gCamera.projectionMatrix)
 			//.setTexture(gl.mTextureCache["tex001"]);
 			
-			gModal = Primatives.CubeBad.createModal(gl);
+			gModal = Primatives.Cube.createModal(gl);
 			gModal.setPosition(0,0.6,0);
 
 			//Old Code
@@ -51,14 +50,6 @@
 			//Start Rendering
 			RLoop = new RenderLoop(onRender,60).start();
 		});
-
-		var gPointSize = 0;
-			gPSizeStep = 3,
-			gAngle = 0,
-			gAngleStep = (Math.PI / 180.0) * 90,
-			gRadius = 0,
-			gRadiusStep = 0.1;
-
 
 
 		function onRender(dt){
@@ -75,22 +66,24 @@
 
 		class TestShader extends Shader{
 			constructor(gl,pMatrix){
-				var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
-					fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
-				super(gl,vertSrc,fragSrc);
+					var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
+						fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
+					super(gl,vertSrc,fragSrc);
 
-				this.uniformLoc.time = gl.getUniformLocation(this.program, "uTime");
+					//Custom Uniforms
+					this.uniformLoc.time = gl.getUniformLocation(this.program,"uTime");
+					
+					var uColor	= gl.getUniformLocation(this.program,"uColor");
+					gl.uniform3fv(uColor, new Float32Array( GlUtil.rgbArray("#FF0000","00FF00","0000FF","909090","C0C0C0","404040") ));
 
-				var uColor = gl.getUniformLocation(this.program, "uColor");
-				gl.uniform3fv(uColor, new Float32Array(GlUtil.rgbArray("#FF0000","00FF00", "0000FF", "909090", "C0C0C0", "404040")));
-
-				//Standrd Uniforms
-				this.setPerspective(pMatrix);
-				this.mainTexture = -1;
-				gl.useProgram(null); //Done setting up shader
+					//Standrd Uniforms
+					this.setPerspective(pMatrix);
+					this.mainTexture = -1; //Store Our Texture ID
+					gl.useProgram(null); //Done setting up shader
 			}
-			setTime(t){ this.gl.uniform1f(this.uniformLoc.time,t); return this;}
-			setTexture(texID){this.mainTexture=texID; return this;}
+
+			setTime(t){ this.gl.uniform1f(this.uniformLoc.time,t); return this; }
+			setTexture(texID){ this.mainTexture = texID; return this; }
 
 			preRender(){
 				this.gl.activeTexture(this.gl.TEXTURE0);
@@ -108,7 +101,8 @@
 	</div>
 	<img src="UV_Grid_Lrg.jpg" id="imgTex" style="display: none;">
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
-		in vec4 a_position;	//Standard position data.
+		in vec4 a_position;	//Making it a vec4, the w component is used as color index from uColor
+		in vec3 a_norm;
 		in vec2 a_uv;
 
 		uniform mat4 uPMatrix;
@@ -119,11 +113,17 @@
 		uniform float uTime;
 
 		out lowp vec4 color;
-		out highp vec2 texCoord;
+		out highp vec2 texCoord;  //Interpolate UV values to the fragment shader
+		
+		vec3 warp(vec3 p){
+			//return p + 0.2 * abs(cos(uTime*0.002)) * a_norm;
+			//return p + 0.5 * abs(cos(uTime*0.003 + p.y)) * a_norm;
+			return p + 0.5 * abs(cos(uTime*0.003 + p.y*2.0 + p.x*2.0 + p.z)) * a_norm;
+		}
 
 		void main(void){
 			texCoord = a_uv;
-			color = vec4(uColor[int(a_position.w)],1.0);
+			color = vec4(uColor[ int(a_position.w) ],1.0);
 			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position.xyz, 1.0); 
 		}
 	</script>

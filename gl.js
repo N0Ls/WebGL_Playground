@@ -8,23 +8,24 @@ const ATTR_UV_LOC			= 2;
 
 class GlUtil{
 	static rgbArray(){
-		if (arguments.length == 0)return null;
+		if(arguments.length == 0) return null;
 		var rtn = [];
-		for(var i=0, c,p; i < arguments.length; i++){
-			if (arguments[i].length <6)continue;
-			c = arguments[i];
-			p = (c[0] == "#")?1:0;
+
+		for(var i=0,c,p; i < arguments.length; i++){
+			if(arguments[i].length < 6) continue;
+			c = arguments[i];		//Just an alias(copy really) of the color text, make code smaller.
+			p = (c[0] == "#")?1:0;	//Determine starting position in char array to start pulling from
 
 			rtn.push(
-				parseInt(c[p]+c[p+1],16) / 255.0,
-				parseInt(c[p+2]+c[p+3],16) / 255.0,
-				parseInt(c[p+4]+c[p+5],16) / 255.0
+				parseInt(c[p]	+c[p+1],16)	/ 255.0,
+				parseInt(c[p+2]	+c[p+3],16)	/ 255.0,
+				parseInt(c[p+4]	+c[p+5],16)	/ 255.0
 			);
 		}
 		return rtn;
-
 	}
 }
+
 function GLInstance(canvasID){
 	var canvas = document.getElementById(canvasID);
 	var gl = canvas.getContext("webgl2");
@@ -59,7 +60,7 @@ function GLInstance(canvasID){
 		return buf;
 	}
 
-	gl.fCreateMeshVAO = function(name,aryInd,aryVert,aryNorm,aryUV){
+	gl.fCreateMeshVAO = function(name,aryInd,aryVert,aryNorm,aryUV, vertLen){
 		var rtn = { drawMode:this.TRIANGLES };
 
 		//Create and bind vao
@@ -70,13 +71,14 @@ function GLInstance(canvasID){
 		//Set up vertices
 		if(aryVert !== undefined && aryVert != null){
 			rtn.bufVertices = this.createBuffer();													//Create buffer...
-			rtn.vertexComponentLen = 3;																//How many floats make up a vertex
+			rtn.vertexComponentLen = vertLen || 3;													//How many floats make up a vertex
 			rtn.vertexCount = aryVert.length / rtn.vertexComponentLen;								//How many vertices in the array
 
 			this.bindBuffer(this.ARRAY_BUFFER, rtn.bufVertices);
 			this.bufferData(this.ARRAY_BUFFER, new Float32Array(aryVert), this.STATIC_DRAW);		//then push array into it.
 			this.enableVertexAttribArray(ATTR_POSITION_LOC);										//Enable Attribute location
-			this.vertexAttribPointer(ATTR_POSITION_LOC,3,this.FLOAT,false,0,0);						//Put buffer at location of the vao
+			//this.vertexAttribPointer(ATTR_POSITION_LOC,3,this.FLOAT,false,0,0);						//Put buffer at location of the vao\
+			this.vertexAttribPointer(ATTR_POSITION_LOC,rtn.vertexComponentLen,this.FLOAT,false,0,0);						//Put buffer at location of the vao
 		}
 
 		//.......................................................
