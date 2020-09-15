@@ -6,7 +6,25 @@ const ATTR_NORMAL_LOC		= 1;
 const ATTR_UV_NAME			= "a_uv";
 const ATTR_UV_LOC			= 2;
 
+class GlUtil{
+	static rgbArray(){
+		if (arguments.length == 0)return null;
+		var rtn = [];
+		for(var i=0, c,p; i < arguments.length; i++){
+			if (arguments[i].length <6)continue;
+			c = arguments[i];
+			p = (c[0] == "#")?1:0;
 
+			rtn.push(
+				parseInt(c[p]+c[p+1],16) / 255.0,
+				parseInt(c[p+2]+c[p+3],16) / 255.0,
+				parseInt(c[p+4]+c[p+5],16) / 255.0
+			);
+		}
+		return rtn;
+
+	}
+}
 function GLInstance(canvasID){
 	var canvas = document.getElementById(canvasID);
 	var gl = canvas.getContext("webgl2");

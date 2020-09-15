@@ -28,18 +28,17 @@
 			gCamera.transform.position.set(0,1,3);
 			gCameraCtrl = new CameraController(gl,gCamera);
 
-			gl.fLoadTexture("tex001", document.getElementById("imgTex"));
+			//Load texture
+			//gl.fLoadTexture("tex001", document.getElementById("imgTex"));
 
 			gGridShader = new GridAxisShader(gl,gCamera.projectionMatrix);
 			gGridModal = Primatives.GridAxis.createModal(gl,true);
 
-			gShader = new TestShader(gl,gCamera.projectionMatrix).setTexture(gl.mTextureCache["tex001"]);
+			gShader = new TestShader(gl,gCamera.projectionMatrix)
+			//.setTexture(gl.mTextureCache["tex001"]);
 			
-			gModal = Primatives.Quad.createModal(gl);
-			gModal.setPosition(0,1,0).setScale(0.2,0.2,0.2);
-			gModal2 = new Modal(gl.mMeshCache["Quad"]);
-
-			gModal3 = Primatives.MultiQuad.createModal(gl);
+			gModal = Primatives.CubeBad.createModal(gl);
+			gModal.setPosition(0,0.6,0);
 
 			//Old Code
 /*			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
@@ -68,22 +67,29 @@
 
 			gGridShader.activate().setCameraMatrix(gCamera.viewMatrix).renderModal(gGridModal.preRender());
 
-			gShader.activate().preRender()
+			gShader.activate()//.preRender()
 				.setCameraMatrix(gCamera.viewMatrix)
-				.renderModal(gModal3.preRender());
+				.setTime(performance.now())
+				.renderModal(gModal.preRender());
 		}
 
 		class TestShader extends Shader{
-				constructor(gl,pMatrix){
-					var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
-						fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
-					super(gl,vertSrc,fragSrc);
+			constructor(gl,pMatrix){
+				var vertSrc = ShaderUtil.domShaderSrc("vertex_shader"),
+					fragSrc = ShaderUtil.domShaderSrc("fragment_shader");
+				super(gl,vertSrc,fragSrc);
 
-					//Standrd Uniforms
-					this.setPerspective(pMatrix);
-					this.mainTexture = -1;
-					gl.useProgram(null); //Done setting up shader
-				}
+				this.uniformLoc.time = gl.getUniformLocation(this.program, "uTime");
+
+				var uColor = gl.getUniformLocation(this.program, "uColor");
+				gl.uniform3fv(uColor, new Float32Array(GlUtil.rgbArray("#FF0000","00FF00", "0000FF", "909090", "C0C0C0", "404040")));
+
+				//Standrd Uniforms
+				this.setPerspective(pMatrix);
+				this.mainTexture = -1;
+				gl.useProgram(null); //Done setting up shader
+			}
+			setTime(t){ this.gl.uniform1f(this.uniformLoc.time,t); return this;}
 			setTexture(texID){this.mainTexture=texID; return this;}
 
 			preRender(){
@@ -102,29 +108,37 @@
 	</div>
 	<img src="UV_Grid_Lrg.jpg" id="imgTex" style="display: none;">
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
-		in vec3 a_position;	//Standard position data.
+		in vec4 a_position;	//Standard position data.
 		in vec2 a_uv;
 
 		uniform mat4 uPMatrix;
 		uniform mat4 uMVMatrix;
 		uniform mat4 uCameraMatrix;
 
+		uniform vec3 uColor[6];
+		uniform float uTime;
+
+		out lowp vec4 color;
 		out highp vec2 texCoord;
 
 		void main(void){
 			texCoord = a_uv;
-			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position, 1.0); 
+			color = vec4(uColor[int(a_position.w)],1.0);
+			gl_Position = uPMatrix * uCameraMatrix * uMVMatrix * vec4(a_position.xyz, 1.0); 
 		}
 	</script>
 	<script id="fragment_shader" type="x-shader/x-fragment">#version 300 es
 		precision mediump float;
+
+		in vec4 color;
 		in highp vec2 texCoord;
 		uniform sampler2D uMainTex;
 
 		out vec4 finalColor;
 		void main(void){
 
-			finalColor = texture(uMainTex, vec2(texCoord.s, texCoord.t));
+			finalColor = color;
+			//texture(uMainTex, vec2(texCoord.s, texCoord.t));
 
 			//circle
 			/*vec2 delta = uv - vec2(0.5,0.5); //delta position from center;
