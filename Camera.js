@@ -62,6 +62,12 @@ class Camera{
 		Matrix4.invert(this.viewMatrix,this.transform.matView.raw);
 		return this.viewMatrix;
 	}
+
+	getTranslatelessMatrix(){
+		var mat = new Float32Array(this.viewMatrix);
+		mat[12]= mat[13] = mat[14] =0.0;
+		return mat;
+	}
 }
 
 Camera.MODE_FREE = 0;	//Allows free movement of position and rotation, basicly first person type of camera

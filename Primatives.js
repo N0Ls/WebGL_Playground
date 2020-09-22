@@ -23,8 +23,8 @@ Primatives.CubeBad = class {
 }
 
 Primatives.Cube = class {
-	static createModal(gl){ return new Modal(Primatives.Cube.createMesh(gl,1,1,1,0,0,0)); }
-	static createMesh(gl,width,height,depth,x,y,z){
+	static createModal(gl,name){ return new Modal(Primatives.Cube.createMesh(gl,name||"Cube",1,1,1,0,0,0)); }
+	static createMesh(gl,name,width,height,depth,x,y,z){
 		var w = width*0.5, h = height*0.5, d = depth*0.5;
 		var x0 = x-w, x1 = x+w, y0 = y-h, y1 = y+h, z0 = z-d, z1 = z+d;
 
@@ -81,7 +81,7 @@ Primatives.Cube = class {
 			 0, 1, 0,	 0, 1, 0,	 0, 1, 0,	 0, 1, 0		//Top
 		]
 
-		var mesh = gl.fCreateMeshVAO("Cube",aIndex,aVert,aNorm,aUV,4);
+		var mesh = gl.fCreateMeshVAO(name,aIndex,aVert,aNorm,aUV,4);
 		mesh.noCulling = true;	//TODO Only setting this true to view animations better.
 		return mesh;
 	}

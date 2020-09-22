@@ -152,5 +152,28 @@ function GLInstance(canvasID){
 	}
 
 	gl.fFitScreen = function(wp,hp){ return this.fSetSize(window.innerWidth * (wp||1), window.innerHeight* (hp||1));}
+	
+	gl.fLoadCubeMap = function(name,imgAry){
+		if(imgAry.length != 6)return null;
+
+		var tex = this.createTexture();
+		this.bindTexture(this.TEXTURE_CUBE_MAP,tex);
+
+		for(var i=0; i < 6; i++){
+			this.texImage2D(this.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.RGBA, this.RGBA, this.UNSIGNED_BYTE, imgAry[i]);
+		}
+
+		this.texParameteri(this.TEXTURE_CUBE_MAP, this.TEXTURE_MAG_FILTER, this.LINEAR);	//Setup up scaling
+		this.texParameteri(this.TEXTURE_CUBE_MAP, this.TEXTURE_MIN_FILTER, this.LINEAR);	//Setup down scaling
+		this.texParameteri(this.TEXTURE_CUBE_MAP, this.TEXTURE_WRAP_S, this.CLAMP_TO_EDGE);	//Stretch image to X position
+		this.texParameteri(this.TEXTURE_CUBE_MAP, this.TEXTURE_WRAP_T, this.CLAMP_TO_EDGE);	//Stretch image to Y position
+		this.texParameteri(this.TEXTURE_CUBE_MAP, this.TEXTURE_WRAP_R, this.CLAMP_TO_EDGE);	//Stretch image to Z position
+		//this.generateMipmap(this.TEXTURE_CUBE_MAP);
+
+		this.bindTexture(this.TEXTURE_CUBE_MAP,null);
+		this.mTextureCache[name] = tex;
+		return tex;
+	}
+
 	return gl;
 }

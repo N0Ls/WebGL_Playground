@@ -16,7 +16,7 @@
 
 	<script>
 		//Global variables init
-		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl;
+		var gl, gRLoop,	gShader, gModal, gCamera, gCameraCtrl, gSkymap, gSkyMapShader;
 		var gGridShader, gGridModal;
 
 		window.addEventListener("load",function(){
@@ -30,22 +30,33 @@
 			//Load texture
 			//gl.fLoadTexture("tex001", document.getElementById("imgTex"));
 
+			gl.fLoadCubeMap("skybox01",[
+					document.getElementById("cube01_right"),document.getElementById("cube01_left"),
+					document.getElementById("cube01_top"),document.getElementById("cube01_bottom"),
+					document.getElementById("cube01_back"),document.getElementById("cube01_front")
+				]);
+
+			gl.fLoadCubeMap("skybox02",[
+					document.getElementById("cube02_right"),document.getElementById("cube02_left"),
+					document.getElementById("cube02_top"),document.getElementById("cube02_bottom"),
+					document.getElementById("cube02_back"),document.getElementById("cube02_front")
+				]);
+			//Grid 
 			gGridShader = new GridAxisShader(gl,gCamera.projectionMatrix);
 			gGridModal = Primatives.GridAxis.createModal(gl,true);
 
+			//Cube 
 			gShader = new TestShader(gl,gCamera.projectionMatrix)
 			//.setTexture(gl.mTextureCache["tex001"]);
 			
 			gModal = Primatives.Cube.createModal(gl);
-			gModal.setPosition(0,0.6,0);
+			gModal.setPosition(0,0,0);
 
-			//Old Code
-/*			gShader = new TestShader(gl,[ 0.8,0.8,0.8,  1,0,0,  0,1,0,  0,0,1 ]); //Gray,Red,Green,Blue
-			gShader.activate().setPerspective(gCamera.projectionMatrix).deactivate();
+			gSkymap = new Modal(Primatives.Cube.createMesh(gl,"Skymap",10,10,10,0,0,0));
+			gSkyMapShader = new SkymapShader(gl,gCamera.projectionMatrix, gl.mTextureCache["skybox01"],
+				gl.mTextureCache["skybox02"]
+			);
 
-
-			gModal = new Modal(Primatives.GridAxis.createMesh(gl,false));
-			gModal.setScale(0.4,0.4,0.4).setRotation(0,0,45).setPosition(0.4,-0.8,0);*/
 
 			//Start Rendering
 			RLoop = new RenderLoop(onRender,60).start();
@@ -55,6 +66,11 @@
 		function onRender(dt){
 			gCamera.updateViewMatrix();
 			gl.fClear();	
+
+			gSkyMapShader.activate().preRender()
+				.setCameraMatrix(gCamera.getTranslatelessMatrix())
+				.setTime(performance.now())
+				.renderModal(gSkymap);
 
 			gGridShader.activate().setCameraMatrix(gCamera.viewMatrix).renderModal(gGridModal.preRender());
 
@@ -93,6 +109,40 @@
 				return this;
 			}
 		}
+
+		class SkymapShader extends Shader{
+				constructor(gl,pMatrix,dayTex,nightTex){
+					var vertSrc = ShaderUtil.domShaderSrc("sky_vshader"),
+						fragSrc = ShaderUtil.domShaderSrc("sky_fshader");
+					super(gl,vertSrc,fragSrc);
+
+					//Custom Uniforms
+					this.uniformLoc.time = gl.getUniformLocation(this.program,"uTime");
+					this.uniformLoc.dayTex = gl.getUniformLocation(this.program,"uDayTex");
+					this.uniformLoc.nightTex = gl.getUniformLocation(this.program,"uNightTex");
+
+					//Standrd Uniforms
+					this.setPerspective(pMatrix);
+					this.texDay = dayTex;
+					this.texNight = nightTex;
+					gl.useProgram(null); //Done setting up shader
+				}
+
+				setTime(t){ this.gl.uniform1f(this.uniformLoc.time,t); return this; }
+
+				//Override
+				preRender(){
+					//Setup Texture
+					this.gl.activeTexture(this.gl.TEXTURE0);
+					this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texDay);
+					this.gl.uniform1i(this.uniformLoc.dayTex,0);
+
+					this.gl.activeTexture(this.gl.TEXTURE1);
+					this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texNight);
+					this.gl.uniform1i(this.uniformLoc.nightTex,1);
+					return this;
+				}
+			}
 	</script>
 </head>
 <body>
@@ -100,6 +150,20 @@
 		<canvas id="glcanvas"></canvas>
 	</div>
 	<img src="UV_Grid_Lrg.jpg" id="imgTex" style="display: none;">
+
+	<img src="./images/miramar_back.png" id="cube01_back" style="display:none;">
+	<img src="./images/miramar_front.png" id="cube01_front" style="display:none;">
+	<img src="./images/miramar_bottom.png" id="cube01_bottom" style="display:none;">
+	<img src="./images/miramar_left.png" id="cube01_left" style="display:none;">
+	<img src="./images/miramar_right.png" id="cube01_right" style="display:none;">
+	<img src="./images/miramar_top.png" id="cube01_top" style="display:none;">
+
+	<img src="./images/grimmnight_back.png" id="cube02_back" style="display:none;">
+	<img src="./images/grimmnight_front.png" id="cube02_front" style="display:none;">
+	<img src="./images/grimmnight_bottom.png" id="cube02_bottom" style="display:none;">
+	<img src="./images/grimmnight_left.png" id="cube02_left" style="display:none;">
+	<img src="./images/grimmnight_right.png" id="cube02_right" style="display:none;">
+	<img src="./images/grimmnight_top.png" id="cube02_top" style="display:none;">
 	<script id="vertex_shader" type="x-shader/x-vertex">#version 300 es
 		in vec4 a_position;	//Making it a vec4, the w component is used as color index from uColor
 		in vec3 a_norm;
@@ -148,6 +212,36 @@
 			if(dist > border) a = 0.0;
 			else if(dist > 0.0) a = 1.0;
 			finalColor = vec4(0,0,0,a);*/
+		}
+	</script>
+
+	<script id="sky_vshader" type="x-shader/x-vertex">#version 300 es
+		in vec4 a_position;	
+		in vec2 a_uv;
+
+		uniform mat4 uPMatrix;
+		uniform mat4 uMVMatrix;
+		uniform mat4 uCameraMatrix;
+	
+		out highp vec3 texCoord;  //Interpolate UV values to the fragment shader
+		
+		void main(void){
+			texCoord = a_position.xyz;
+			gl_Position = uPMatrix * uCameraMatrix * vec4(a_position.xyz, 1.0); 
+		}
+	</script>
+
+	<script id="sky_fshader" type="x-shader/x-fragment">#version 300 es
+		precision mediump float;
+		
+		in highp vec3 texCoord;
+		uniform samplerCube uDayTex;
+		uniform samplerCube uNightTex;
+		uniform float uTime;
+		
+		out vec4 finalColor;
+		void main(void){
+			finalColor = mix( texture(uDayTex, texCoord), texture(uNightTex, texCoord), abs(sin(uTime * 0.0005)) );
 		}
 	</script>
 </body>
